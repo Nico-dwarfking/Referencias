@@ -1,5 +1,9 @@
 Referencias de la presentación "Género, prototipos y pronombres en la lengua española" en el III Congreso Enseñanza, aprendizaje y uso de lenguas en el Hemisferio Sur y países “en vías de desarrollo” en el siglo XXI
 
+Barra, E. (2005). Inventario de Rol Sexual. En P. Vera y L. Oblitas (Eds.) Manual de Escalas y Cuestionarios Iberoamericanos en Psicología Clínica y de la Salud, Bogotá: Psicom Editores
+
+Bem, S. L. (1974). The measurement of psychological androgyny. Journal of Consulting and Clinical Psychology, 42(2), 155–162. https://doi.org/10.1037/h0036215
+
 Butler, J. (1988). Performative Acts and Gender Constitution: An Essay in Phenomenology and Feminist Theory. Theatre Journal, 40(4), 519–531. JSTOR. https://doi.org/10.2307/3207893
 
 Butler, J. (1990). Gender trouble: Feminism and the subversion of identity. Routledge; WorldCat.
