@@ -24,6 +24,7 @@ library(udpipe)
 library(ggwordcloud)
 library(ggpattern)
 
+
 #Path to data
 setwd("/Users/nicomuller/Documents/Doctorado/Tesis")
 
@@ -851,42 +852,42 @@ proto_afinn_fem_elles <- kwic(subtoks_fem_elles, pattern = c(AfinnPos5_02, Afinn
                                                               AfinnPos1_02, AfinnNeutro_02,
                                                               AfinnNeg1_02, AfinnNeg2_02,
                                                               AfinnNeg3_02, AfinnNeg4_02,
-                                                              AfinnNeg5_02), window = 5)
+                                                              AfinnNeg5_02), window = 70)
 
 proto_afinn_masc_elles <- kwic(subtoks_masc_elles, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
                                                              AfinnPos1_02, AfinnNeutro_02,
                                                              AfinnNeg1_02, AfinnNeg2_02,
                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 5)
+                                                             AfinnNeg5_02), window = 70)
 
 proto_afinn_neut_elles <- kwic(subtoks_neut_elles, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
                                                              AfinnPos1_02, AfinnNeutro_02,
                                                              AfinnNeg1_02, AfinnNeg2_02,
                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 5)
+                                                             AfinnNeg5_02), window = 70)
 
 proto_afinn_fem_ellxs <- kwic(subtoks_fem_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
                                                              AfinnPos1_02, AfinnNeutro_02,
                                                              AfinnNeg1_02, AfinnNeg2_02,
                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 5)
+                                                             AfinnNeg5_02), window = 70)
 
 proto_afinn_masc_ellxs <- kwic(subtoks_masc_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
                                                              AfinnPos1_02, AfinnNeutro_02,
                                                              AfinnNeg1_02, AfinnNeg2_02,
                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 5)
+                                                             AfinnNeg5_02), window = 70)
 
 proto_afinn_neut_ellxs <- kwic(subtoks_neut_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
                                                              AfinnPos1_02, AfinnNeutro_02,
                                                              AfinnNeg1_02, AfinnNeg2_02,
                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 5)
+                                                             AfinnNeg5_02), window = 70)
 
 
 proto_afinn_fem_elles$afinn <- case_when(proto_afinn_fem_elles$pattern %in% AfinnPos5_02 ~ "Positivo +5",
@@ -1240,6 +1241,69 @@ Boxplot_proto <- ggplot(Afinn_proto_total, aes(x=interaction(Corpus, prototipo),
       axis.text.x = element_text(angle = 45, hjust = 1),
       legend.position = "right")
 
+
+proto_afinn_fem_elles_gdex <-tibble(
+  ejemplo = paste(proto_afinn_fem_elles$pre, proto_afinn_fem_elles$keyword,
+                  proto_afinn_fem_elles$post),
+  docname = proto_afinn_fem_elles$docname,
+  start_pos = proto_afinn_fem_elles$from)
+proto_afinn_fem_elles_gdex02 <- proto_afinn_fem_elles_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+proto_afinn_masc_elles_gdex <- tibble(
+  ejemplo = paste(proto_afinn_masc_elles$pre, proto_afinn_masc_elles$keyword,
+                  proto_afinn_masc_elles$post),
+  docname = proto_afinn_masc_elles$docname,
+  start_pos = proto_afinn_masc_elles$from)
+proto_afinn_masc_elles_gdex02 <-proto_afinn_masc_elles_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+proto_afinn_neut_elles_gdex <- tibble(
+  ejemplo = paste(proto_afinn_neut_elles$pre, proto_afinn_neut_elles$keyword,
+                  proto_afinn_neut_elles$post),
+  docname = proto_afinn_neut_elles$docname,
+  start_pos = proto_afinn_neut_elles$from)
+proto_afinn_neut_elles_gdex02 <- proto_afinn_neut_elles_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+proto_afinn_fem_ellxs_gdex <- tibble(
+  ejemplo = paste(proto_afinn_fem_ellxs$pre, proto_afinn_fem_ellxs$keyword,
+                  proto_afinn_fem_ellxs$post),
+  docname = proto_afinn_fem_ellxs$docname,
+  start_pos = proto_afinn_fem_ellxs$from)
+proto_afinn_fem_ellxs_gdex02 <- proto_afinn_fem_ellxs_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+proto_afinn_masc_ellxs_gdex <- tibble(
+  ejemplo = paste(proto_afinn_masc_ellxs$pre, proto_afinn_masc_ellxs$keyword,
+                  proto_afinn_masc_ellxs$post),
+  docname = proto_afinn_masc_ellxs$docname,
+  start_pos = proto_afinn_masc_ellxs$from)
+proto_afinn_masc_ellxs_gdex02 <- proto_afinn_masc_ellxs_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+proto_afinn_neut_ellxs_gdex <- tibble(
+  ejemplo = paste(proto_afinn_neut_ellxs$pre, proto_afinn_neut_ellxs$keyword,
+                  proto_afinn_neut_ellxs$post),
+  docname = proto_afinn_neut_ellxs$docname,
+  start_pos = proto_afinn_neut_ellxs$from)
+proto_afinn_neut_ellxs_gdex02 <- proto_afinn_neut_ellxs_gdex %>%
+  mutate(score = sapply(ejemplo, score_example)) %>%
+  arrange(desc(score))
+
+print(proto_afinn_fem_elles_gdex02)
+print(proto_afinn_fem_ellxs_gdex02)
+print(proto_afinn_masc_elles_gdex02)
+print(proto_afinn_masc_ellxs_gdex02)
+print(proto_afinn_neut_elles_gdex02)
+print(proto_afinn_neut_ellxs_gdex02)
+
+
 #Ostensividad (UdeC)
 #kwic de las palabras relacionadas a feminismo q salen en fcms
 
@@ -1296,14 +1360,10 @@ Osten_ellxs_gdex02 <- Osten_ellxs_gdex %>%
 
 print(Osten_elles_gdex02)
 print(Osten_ellxs_gdex02)
+elles_esp[68829,5]
+ellxs_esp [784,5]
 
-prototipos_ellxs <- tibble(
-  ejemplo = paste(kwic_proto_ellxs$pre, kwic_proto_ellxs$keyword, kwic_proto_ellxs$post),
-  docname = kwic_proto_ellxs$docname,
-  start_pos = kwic_proto_ellxs$from)
-GDEX_Prototipo_ellxs <- prototipos_ellxs %>%
-  mutate(score = sapply(ejemplo, score_example)) %>%
-  arrange(desc(score))
+
 
 
 #Visualizaciones
@@ -1332,6 +1392,9 @@ Graph_afinn_masc_ellxs
 Graph_afinn_neut_elles
 Graph_afinn_neut_ellxs
 Boxplot_proto
+Graph_hashtags
+Graph_hashtags_elles
+Graph_hashtags_ellxs
 
 Tabla_Neopron
 Tabla_proto_elles
