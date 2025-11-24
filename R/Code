@@ -23,6 +23,7 @@ library(NLP)
 library(udpipe)
 library(ggwordcloud)
 library(ggpattern)
+library(forcats)
 
 
 #Path to data
@@ -67,25 +68,25 @@ Corpus_elles <- corpus(elles_esp, text_field = "renderedContent")
 Corpus_ellxs <- corpus(ellxs_esp, text_field = "renderedContent")
 
 toks_all <- tokens(Corpus_all, remove_punct = T, remove_symbols = F, 
-                         remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
+                   remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
   tokens_remove(pattern = stopwords("es", source = "stopwords-iso"), padding = T)%>%
   tokens_remove(pattern = c("xd*", "jo", "jaja*", "re", "pq", "xq", "gt"))%>%
   tokens_keep(pattern = "^[\\p{script=Latn}]+$", valuetype = "regex")
 
 toks_elles <- tokens(Corpus_elles, remove_punct = T, remove_symbols = F, 
-                           remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
+                     remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
   tokens_remove(pattern = stopwords("es", source = "stopwords-iso"), padding = T)%>%
   tokens_remove(pattern = c("xd*", "jo", "jaja*", "re", "pq", "xq", "gt"))%>%
   tokens_keep(pattern = "^[\\p{script=Latn}]+$", valuetype = "regex")
 
 toks_ellxs <- tokens(Corpus_ellxs, remove_punct = T, remove_symbols = F, 
-                           remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
+                     remove_numbers = T, remove_url = T, include_docvars = T, padding =T)%>%
   tokens_remove(pattern = stopwords("es", source = "stopwords-iso"), padding = T)%>%
   tokens_remove(pattern = c("xd*", "jo", "jaja*", "re", "pq", "xq", "gt"))%>%
   tokens_keep(pattern = "^[\\p{script=Latn}]+$", valuetype = "regex")
 
 toks_kwic_all <- tokens(Corpus_all, remove_punct = F, remove_symbols = F, 
-                         remove_numbers = F, remove_url = F, include_docvars = T, padding =T)%>%
+                        remove_numbers = F, remove_url = F, include_docvars = T, padding =T)%>%
   tokens_remove(pattern = c("xd*", "jo", "jaja*", "re", "pq", "xq", "gt"))%>%
   tokens_keep(pattern = "^[\\p{script=Latn}]+$", valuetype = "regex")
 
@@ -187,7 +188,7 @@ Locus02 <- Locus [which(Locus$`place$country` != "NA"),]
 Locus02 <- Locus02 %>% arrange(desc(n))
 
 Graph_locus <- ggplot(data = Locus02, aes(y = `place$country`,
-                                      x=n, fill=Corpus)) +
+                                          x=n, fill=Corpus)) +
   geom_col(position = "dodge") +
   scale_fill_manual("legend", values = c("elles" = "##9C59D1",
                                          "ellxs" = "gold2")) +
@@ -207,20 +208,20 @@ LatAm <- c("Argentina", "Mexico", "Chile", "Colombia", "Brazil", "Peru", "Urugua
            "Ecuador", "Costa Rica", "Paraguay", "Venezuela", "Dominican Republic",
            "Panama", "Guatemala", "Bolivia", "Cuba", "El Salvador", "Haiti",
            "Honduras", "Nicaragua")
-  
+
 Europa <- c("Spain", "United Kingdom", "France", "Andorra", "Austria", "Belgium",
             "Bulgaria", "Denmark", "Hungary", "Iceland", "Ireland", "Italy",
             "Lithuania", "Malta", "Norway", "Poland", "Portugal", "Republic of Slovenia",
             "Romania", "Russia", "Sweden", "Switzerland", "The Netherlands")
-  
+
 Otros <- c("United States", "Australia", "Cameroon", "Canada", "Egypt", "Estonia",
            "Finland", "Germany", "Greece", "Japan", "Morocco", "People's Republic of China",
            "Qatar", "Republic of Korea", "Republic of the Philippines", "Thailand",
            "Turkey", "Uganda")
 
 corpus_total$region <- case_when(corpus_total$place$country %in% LatAm ~"LatAm",
-                          corpus_total$place$country %in% Europa ~ "Europa",
-                          corpus_total$place$country %in% Otros ~"Otros")
+                                 corpus_total$place$country %in% Europa ~ "Europa",
+                                 corpus_total$place$country %in% Otros ~"Otros")
 
 Regio <- corpus_total [which(corpus_total$place$country != "NA"),]
 
@@ -280,7 +281,7 @@ textplot_network(fcm_keyness_ellxs,
 #Carga Afectiva
 
 Afinn <- read.csv("lexico_afinn.csv", header = T, row.names = NULL, sep = ",", 
-                          encoding = "UTF-8")
+                  encoding = "UTF-8")
 
 AfinnNeg5 <- Afinn [which(Afinn$puntuacion == -5),]
 AfinnNeg4 <- Afinn [which(Afinn$puntuacion == -4),]
@@ -353,25 +354,25 @@ Topfeels_ellxs <- ggplot(feat_feels_ellxs, aes(x=feature, y=frequency)) +
 
 
 Afinn_Kwics_all <- kwic(toks_all, pattern= c(AfinnPos5_02, AfinnPos4_02,
+                                             AfinnPos3_02, AfinnPos2_02,
+                                             AfinnPos1_02, AfinnNeutro_02,
+                                             AfinnNeg1_02, AfinnNeg2_02,
+                                             AfinnNeg3_02, AfinnNeg4_02,
+                                             AfinnNeg5_02), window = 5)
+
+Afinn_Kwics_elles <- kwic(toks_elles, pattern= c(AfinnPos5_02, AfinnPos4_02,
                                                  AfinnPos3_02, AfinnPos2_02,
                                                  AfinnPos1_02, AfinnNeutro_02,
                                                  AfinnNeg1_02, AfinnNeg2_02,
                                                  AfinnNeg3_02, AfinnNeg4_02,
                                                  AfinnNeg5_02), window = 5)
 
-Afinn_Kwics_elles <- kwic(toks_elles, pattern= c(AfinnPos5_02, AfinnPos4_02,
-                                                    AfinnPos3_02, AfinnPos2_02,
-                                                    AfinnPos1_02, AfinnNeutro_02,
-                                                    AfinnNeg1_02, AfinnNeg2_02,
-                                                    AfinnNeg3_02, AfinnNeg4_02,
-                                                    AfinnNeg5_02), window = 5)
-
 Afinn_Kwics_ellxs <-kwic(toks_ellxs, pattern= c(AfinnPos5_02, AfinnPos4_02,
-                                                   AfinnPos3_02, AfinnPos2_02,
-                                                   AfinnPos1_02, AfinnNeutro_02,
-                                                   AfinnNeg1_02, AfinnNeg2_02,
-                                                   AfinnNeg3_02, AfinnNeg4_02,
-                                                   AfinnNeg5_02), window = 5)
+                                                AfinnPos3_02, AfinnPos2_02,
+                                                AfinnPos1_02, AfinnNeutro_02,
+                                                AfinnNeg1_02, AfinnNeg2_02,
+                                                AfinnNeg3_02, AfinnNeg4_02,
+                                                AfinnNeg5_02), window = 5)
 
 
 Afinn_Kwics_all$afinn <- case_when(Afinn_Kwics_all$pattern %in% AfinnPos5_02 ~ "Positivo +5",
@@ -426,7 +427,7 @@ Afinn_Kwics_elles$value <- case_when(Afinn_Kwics_elles$pattern %in% AfinnPos5_02
                                      Afinn_Kwics_elles$pattern %in% AfinnNeg3_02 ~ "-3",
                                      Afinn_Kwics_elles$pattern %in% AfinnNeg4_02 ~ "-4",
                                      Afinn_Kwics_elles$pattern %in% AfinnNeg5_02 ~ "-5",
-                                   TRUE ~ "somedefaultgroup")
+                                     TRUE ~ "somedefaultgroup")
 Afinn_Kwics_elles$value <- as.numeric(Afinn_Kwics_elles$value)
 
 
@@ -454,7 +455,7 @@ Afinn_Kwics_ellxs$value <- case_when(Afinn_Kwics_ellxs$pattern %in% AfinnPos5_02
                                      Afinn_Kwics_ellxs$pattern %in% AfinnNeg3_02 ~ "-3",
                                      Afinn_Kwics_ellxs$pattern %in% AfinnNeg4_02 ~ "-4",
                                      Afinn_Kwics_ellxs$pattern %in% AfinnNeg5_02 ~ "-5",
-                                   TRUE ~ "somedefaultgroup")
+                                     TRUE ~ "somedefaultgroup")
 
 Afinn_Kwics_ellxs$value <- as.numeric(Afinn_Kwics_ellxs$value)
 
@@ -477,8 +478,8 @@ Afinn_trim_elles <- Afinn_stats_elles[1:50,]
 Afinn_trim_ellxs <- Afinn_stats_ellxs[1:50,]
 
 
-Graph_afinn_all <- ggplot(data=Afinn_trim_all, aes(x=keyword, y=n,
-                                                    fill=afinn)) +
+Graph_afinn_all <- ggplot(data=Afinn_trim_all, aes(x=reorder(keyword, value), y=n,
+                                                   fill=afinn)) +
   geom_col() +
   coord_flip() +
   scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
@@ -498,8 +499,8 @@ Graph_afinn_all <- ggplot(data=Afinn_trim_all, aes(x=keyword, y=n,
   labs(x="Palabras con carga afectiva", y="n")+
   ggtitle("50 Palabras con carga afectiva más frecuentes")
 
-Graph_afinn_elles <- ggplot(data=Afinn_trim_elles, aes(x=keyword, y=n,
-                                                    fill=afinn)) +
+Graph_afinn_elles <- ggplot(data=Afinn_trim_elles, aes(x=reorder(keyword, value), y=n,
+                                                       fill=afinn)) +
   geom_col() +
   coord_flip() +
   scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
@@ -519,8 +520,8 @@ Graph_afinn_elles <- ggplot(data=Afinn_trim_elles, aes(x=keyword, y=n,
   labs(x="Palabras con carga afectiva", y="n")+
   ggtitle("50 Palabras con carga afectiva más frecuentes en corpus Elles")
 
-Graph_afinn_ellxs <- ggplot(data=Afinn_trim_ellxs, aes(x=keyword, y=n,
-                                                    fill=afinn)) +
+Graph_afinn_ellxs <- ggplot(data=Afinn_trim_ellxs, aes(x=reorder(keyword, value), y=n,
+                                                       fill=afinn)) +
   geom_col() +
   coord_flip() +
   scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
@@ -548,15 +549,15 @@ Boxplot <- ggplot(Afinn_total, aes(x=Corpus, y=value, fill=Corpus)) +
   coord_cartesian(ylim = c(-6, 6))+
   scale_y_continuous(expand = c(0,0), breaks = pretty(c(-6,6), n = 13)) +
   scale_fill_manual(values = c("ellxs" = "gold2", 
-                              "total" = "grey35","elles" = "#9C59D1")) +
+                               "total" = "grey35","elles" = "#9C59D1")) +
   stat_summary(fun=mean, geom="point", shape=21, size=2, fill="brown3")
 
 
 #Neopronombres
 
 Neopron <- kwic(toks_kwic_all, pattern = c("ellu", "ellus", "elli", "ellis",
-                                            "elloa", "elloas", "il", "ól",
-                                            "olles", "xelle", "xelles"),
+                                           "elloa", "elloas", "il", "ól",
+                                           "olles", "xelle", "xelles"),
                 window = 70)
 
 Neopron_count <- Neopron %>% count(pattern)
@@ -651,7 +652,7 @@ IRS_Masc <- c("ambicios*", "analític*", "arriesgad*", "autosuficiente*", "avent
 
 BSRI_Neut <- c("adaptable*", "consciente*", "amigable*",
                "ineficiente*", "celos*", "secretiv*", "sincer*", "solemne*",
-              "impredecible*", "servicial*", "agradable*", "confiable*")
+               "impredecible*", "servicial*", "agradable*", "confiable*")
 
 toks_kwic_elles_filtrado <- toks_kwic_elles %>%
   tokens_remove(pattern = c("sinceramente", "celos", "románticamente"), 
@@ -848,25 +849,25 @@ subtoks_neut_ellxs <- tokens(Neut_ellxs$ejemplo, remove_punct = T, remove_symbol
   tokens_remove(pattern = stopwords("es", source = "stopwords-iso"), padding = T)
 
 proto_afinn_fem_elles <- kwic(subtoks_fem_elles, pattern = c(AfinnPos5_02, AfinnPos4_02,
-                                                              AfinnPos3_02, AfinnPos2_02,
-                                                              AfinnPos1_02, AfinnNeutro_02,
-                                                              AfinnNeg1_02, AfinnNeg2_02,
-                                                              AfinnNeg3_02, AfinnNeg4_02,
-                                                              AfinnNeg5_02), window = 70)
+                                                             AfinnPos3_02, AfinnPos2_02,
+                                                             AfinnPos1_02, AfinnNeutro_02,
+                                                             AfinnNeg1_02, AfinnNeg2_02,
+                                                             AfinnNeg3_02, AfinnNeg4_02,
+                                                             AfinnNeg5_02), window = 70)
 
 proto_afinn_masc_elles <- kwic(subtoks_masc_elles, pattern = c(AfinnPos5_02, AfinnPos4_02,
-                                                             AfinnPos3_02, AfinnPos2_02,
-                                                             AfinnPos1_02, AfinnNeutro_02,
-                                                             AfinnNeg1_02, AfinnNeg2_02,
-                                                             AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 70)
+                                                               AfinnPos3_02, AfinnPos2_02,
+                                                               AfinnPos1_02, AfinnNeutro_02,
+                                                               AfinnNeg1_02, AfinnNeg2_02,
+                                                               AfinnNeg3_02, AfinnNeg4_02,
+                                                               AfinnNeg5_02), window = 70)
 
 proto_afinn_neut_elles <- kwic(subtoks_neut_elles, pattern = c(AfinnPos5_02, AfinnPos4_02,
-                                                             AfinnPos3_02, AfinnPos2_02,
-                                                             AfinnPos1_02, AfinnNeutro_02,
-                                                             AfinnNeg1_02, AfinnNeg2_02,
-                                                             AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 70)
+                                                               AfinnPos3_02, AfinnPos2_02,
+                                                               AfinnPos1_02, AfinnNeutro_02,
+                                                               AfinnNeg1_02, AfinnNeg2_02,
+                                                               AfinnNeg3_02, AfinnNeg4_02,
+                                                               AfinnNeg5_02), window = 70)
 
 proto_afinn_fem_ellxs <- kwic(subtoks_fem_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
                                                              AfinnPos3_02, AfinnPos2_02,
@@ -876,18 +877,18 @@ proto_afinn_fem_ellxs <- kwic(subtoks_fem_ellxs, pattern = c(AfinnPos5_02, Afinn
                                                              AfinnNeg5_02), window = 70)
 
 proto_afinn_masc_ellxs <- kwic(subtoks_masc_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
-                                                             AfinnPos3_02, AfinnPos2_02,
-                                                             AfinnPos1_02, AfinnNeutro_02,
-                                                             AfinnNeg1_02, AfinnNeg2_02,
-                                                             AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 70)
+                                                               AfinnPos3_02, AfinnPos2_02,
+                                                               AfinnPos1_02, AfinnNeutro_02,
+                                                               AfinnNeg1_02, AfinnNeg2_02,
+                                                               AfinnNeg3_02, AfinnNeg4_02,
+                                                               AfinnNeg5_02), window = 70)
 
 proto_afinn_neut_ellxs <- kwic(subtoks_neut_ellxs, pattern = c(AfinnPos5_02, AfinnPos4_02,
-                                                             AfinnPos3_02, AfinnPos2_02,
-                                                             AfinnPos1_02, AfinnNeutro_02,
-                                                             AfinnNeg1_02, AfinnNeg2_02,
-                                                             AfinnNeg3_02, AfinnNeg4_02,
-                                                             AfinnNeg5_02), window = 70)
+                                                               AfinnPos3_02, AfinnPos2_02,
+                                                               AfinnPos1_02, AfinnNeutro_02,
+                                                               AfinnNeg1_02, AfinnNeg2_02,
+                                                               AfinnNeg3_02, AfinnNeg4_02,
+                                                               AfinnNeg5_02), window = 70)
 
 
 proto_afinn_fem_elles$afinn <- case_when(proto_afinn_fem_elles$pattern %in% AfinnPos5_02 ~ "Positivo +5",
@@ -928,7 +929,7 @@ proto_afinn_masc_elles$afinn <- case_when(proto_afinn_masc_elles$pattern %in% Af
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg3_02 ~ "Negativo -3",
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg4_02 ~ "Negativo -4",
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg5_02 ~ "Negativo -5",
-                                         TRUE ~ "somedefaultgroup")
+                                          TRUE ~ "somedefaultgroup")
 
 proto_afinn_masc_elles$value <- case_when(proto_afinn_masc_elles$pattern %in% AfinnPos5_02 ~ "5",
                                           proto_afinn_masc_elles$pattern %in% AfinnPos4_02 ~ "4",
@@ -941,7 +942,7 @@ proto_afinn_masc_elles$value <- case_when(proto_afinn_masc_elles$pattern %in% Af
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg3_02 ~ "-3",
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg4_02 ~ "-4",
                                           proto_afinn_masc_elles$pattern %in% AfinnNeg5_02 ~ "-5",
-                                         TRUE ~ "somedefaultgroup")
+                                          TRUE ~ "somedefaultgroup")
 proto_afinn_masc_elles$value <- as.numeric(proto_afinn_masc_elles$value)
 
 proto_afinn_neut_elles$afinn <- case_when(proto_afinn_neut_elles$pattern %in% AfinnPos5_02 ~ "Positivo +5",
@@ -1074,7 +1075,7 @@ proto_afinn_fem_ellxs_trim <- proto_afinn_fem_ellxs_stats[1:50,]
 proto_afinn_masc_ellxs_trim <- proto_afinn_masc_ellxs_stats[1:50,]
 proto_afinn_neut_ellxs_trim <- proto_afinn_neut_ellxs_stats[1:50,]
 
-Graph_afinn_fem_elles <- ggplot(data=proto_afinn_fem_elles_trim, aes(x=keyword,
+Graph_afinn_fem_elles <- ggplot(data=proto_afinn_fem_elles_trim, aes(x=reorder(keyword, value),
                                                                      y=n, fill=afinn)) +
   geom_col() +
   coord_flip() +
@@ -1093,72 +1094,9 @@ Graph_afinn_fem_elles <- ggplot(data=proto_afinn_fem_elles_trim, aes(x=keyword,
                                            decimal.mark = ","),
                      expand = c(0,0)) + 
   labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Femenine")
 
-Graph_afinn_masc_elles <- ggplot(data=proto_afinn_masc_elles_trim, aes(x=keyword,
-                                                                     y=n, fill=afinn)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
-                                          "Negativo -4" = "#BE91D7",
-                                          "Negativo -3" = "#C8A5D2",
-                                          "Negativo -2" = "#D2B9CD",
-                                          "Negativo -1" = "#DBCED8",
-                                          "Neutro" = "grey",
-                                          "Positivo +1" = "#C5D2C2",
-                                          "Positivo +2" = "#AEC9A9",
-                                          "Positivo +3" = "#97BF90",
-                                          "Positivo +4" = "#7FA676",
-                                          "Positivo +5" = "#4A8123")) +
-  scale_y_continuous(labels = comma_format(big.mark = ".",
-                                           decimal.mark = ","),
-                     expand = c(0,0)) + 
-  labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
-
-Graph_afinn_neut_elles <- ggplot(data=proto_afinn_neut_elles_trim, aes(x=keyword,
-                                                                     y=n, fill=afinn)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
-                                          "Negativo -4" = "#BE91D7",
-                                          "Negativo -3" = "#C8A5D2",
-                                          "Negativo -2" = "#D2B9CD",
-                                          "Negativo -1" = "#DBCED8",
-                                          "Neutro" = "grey",
-                                          "Positivo +1" = "#C5D2C2",
-                                          "Positivo +2" = "#AEC9A9",
-                                          "Positivo +3" = "#97BF90",
-                                          "Positivo +4" = "#7FA676",
-                                          "Positivo +5" = "#4A8123")) +
-  scale_y_continuous(labels = comma_format(big.mark = ".",
-                                           decimal.mark = ","),
-                     expand = c(0,0)) + 
-  labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
-
-Graph_afinn_fem_ellxs <- ggplot(data=proto_afinn_fem_ellxs_trim, aes(x=keyword,
-                                                                     y=n, fill=afinn)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
-                                          "Negativo -4" = "#BE91D7",
-                                          "Negativo -3" = "#C8A5D2",
-                                          "Negativo -2" = "#D2B9CD",
-                                          "Negativo -1" = "#DBCED8",
-                                          "Neutro" = "grey",
-                                          "Positivo +1" = "#C5D2C2",
-                                          "Positivo +2" = "#AEC9A9",
-                                          "Positivo +3" = "#97BF90",
-                                          "Positivo +4" = "#7FA676",
-                                          "Positivo +5" = "#4A8123")) +
-  scale_y_continuous(labels = comma_format(big.mark = ".",
-                                           decimal.mark = ","),
-                     expand = c(0,0)) + 
-  labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
-
-Graph_afinn_masc_ellxs <- ggplot(data=proto_afinn_masc_ellxs_trim, aes(x=keyword,
+Graph_afinn_masc_elles <- ggplot(data=proto_afinn_masc_elles_trim, aes(x=reorder(keyword, value),
                                                                        y=n, fill=afinn)) +
   geom_col() +
   coord_flip() +
@@ -1177,9 +1115,9 @@ Graph_afinn_masc_ellxs <- ggplot(data=proto_afinn_masc_ellxs_trim, aes(x=keyword
                                            decimal.mark = ","),
                      expand = c(0,0)) + 
   labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Masculine")
 
-Graph_afinn_neut_ellxs <- ggplot(data=proto_afinn_neut_ellxs_trim, aes(x=keyword,
+Graph_afinn_neut_elles <- ggplot(data=proto_afinn_neut_elles_trim, aes(x=reorder(keyword, value),
                                                                        y=n, fill=afinn)) +
   geom_col() +
   coord_flip() +
@@ -1198,7 +1136,70 @@ Graph_afinn_neut_ellxs <- ggplot(data=proto_afinn_neut_ellxs_trim, aes(x=keyword
                                            decimal.mark = ","),
                      expand = c(0,0)) + 
   labs(x="Palabras con carga afectiva", y="n")+
-  ggtitle("50 Palabras con carga afectiva más frecuentes")
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Neutre")
+
+Graph_afinn_fem_ellxs <- ggplot(data=proto_afinn_fem_ellxs_trim, aes(x=reorder(keyword, value),
+                                                                     y=n, fill=afinn)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
+                                          "Negativo -4" = "#BE91D7",
+                                          "Negativo -3" = "#C8A5D2",
+                                          "Negativo -2" = "#D2B9CD",
+                                          "Negativo -1" = "#DBCED8",
+                                          "Neutro" = "grey",
+                                          "Positivo +1" = "#C5D2C2",
+                                          "Positivo +2" = "#AEC9A9",
+                                          "Positivo +3" = "#97BF90",
+                                          "Positivo +4" = "#7FA676",
+                                          "Positivo +5" = "#4A8123")) +
+  scale_y_continuous(labels = comma_format(big.mark = ".",
+                                           decimal.mark = ","),
+                     expand = c(0,0)) + 
+  labs(x="Palabras con carga afectiva", y="n")+
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Femeninx")
+
+Graph_afinn_masc_ellxs <- ggplot(data=proto_afinn_masc_ellxs_trim, aes(x=reorder(keyword, value),
+                                                                       y=n, fill=afinn)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
+                                          "Negativo -4" = "#BE91D7",
+                                          "Negativo -3" = "#C8A5D2",
+                                          "Negativo -2" = "#D2B9CD",
+                                          "Negativo -1" = "#DBCED8",
+                                          "Neutro" = "grey",
+                                          "Positivo +1" = "#C5D2C2",
+                                          "Positivo +2" = "#AEC9A9",
+                                          "Positivo +3" = "#97BF90",
+                                          "Positivo +4" = "#7FA676",
+                                          "Positivo +5" = "#4A8123")) +
+  scale_y_continuous(labels = comma_format(big.mark = ".",
+                                           decimal.mark = ","),
+                     expand = c(0,0)) + 
+  labs(x="Palabras con carga afectiva", y="n")+
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Masculinx")
+
+Graph_afinn_neut_ellxs <- ggplot(data=proto_afinn_neut_ellxs_trim, aes(x=reorder(keyword, value),
+                                                                       y=n, fill=afinn)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_manual("Leyenda", values = c("Negativo -5" = "#B57EDC",
+                                          "Negativo -4" = "#BE91D7",
+                                          "Negativo -3" = "#C8A5D2",
+                                          "Negativo -2" = "#D2B9CD",
+                                          "Negativo -1" = "#DBCED8",
+                                          "Neutro" = "grey",
+                                          "Positivo +1" = "#C5D2C2",
+                                          "Positivo +2" = "#AEC9A9",
+                                          "Positivo +3" = "#97BF90",
+                                          "Positivo +4" = "#7FA676",
+                                          "Positivo +5" = "#4A8123")) +
+  scale_y_continuous(labels = comma_format(big.mark = ".",
+                                           decimal.mark = ","),
+                     expand = c(0,0)) + 
+  labs(x="Palabras con carga afectiva", y="n")+
+  ggtitle("50 Palabras con carga afectiva más frecuentes: Neutrx")
 
 
 
@@ -1234,12 +1235,13 @@ Boxplot_proto <- ggplot(Afinn_proto_total, aes(x=interaction(Corpus, prototipo),
   scale_fill_manual(values = c("Ellxs" = "gold2", "Elles" = "#9C59D1")) +
   scale_pattern_manual(values = c("Fem" = "stripe", "Masc" = "stripe", "Neut" = "stripe")) +
   scale_pattern_fill_manual(values = c("Fem" = "#F5A9B8", "Masc" = "#5BCEFA",
-                                  "Neut" = "grey")) +
+                                       "Neut" = "grey")) +
   stat_summary(fun=mean, geom="point", shape=21, size=2, fill="brown3") +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      legend.position = "right")
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "right") +
+  labs (x="Prototipos en subcorpus")
 
 
 proto_afinn_fem_elles_gdex <-tibble(
@@ -1296,13 +1298,21 @@ proto_afinn_neut_ellxs_gdex02 <- proto_afinn_neut_ellxs_gdex %>%
   mutate(score = sapply(ejemplo, score_example)) %>%
   arrange(desc(score))
 
-print(proto_afinn_fem_elles_gdex02)
-print(proto_afinn_fem_ellxs_gdex02)
-print(proto_afinn_masc_elles_gdex02)
-print(proto_afinn_masc_ellxs_gdex02)
-print(proto_afinn_neut_elles_gdex02)
-print(proto_afinn_neut_ellxs_gdex02)
 
+View(proto_afinn_fem_elles_gdex02)
+View(proto_afinn_fem_ellxs_gdex02)
+View(proto_afinn_masc_elles_gdex02)
+View(proto_afinn_masc_ellxs_gdex02)
+View(proto_afinn_neut_elles_gdex02)
+View(proto_afinn_neut_ellxs_gdex02)
+
+
+cat(Fem_elles$ejemplo[5])
+cat(Fem_ellxs$ejemplo[778])
+cat(Masc_elles$ejemplo[8])
+cat(Masc_ellxs$ejemplo[765])
+cat(Neut_elles$ejemplo[696])
+cat(Neut_ellxs$ejemplo[52])
 
 #Ostensividad (UdeC)
 #kwic de las palabras relacionadas a feminismo q salen en fcms
