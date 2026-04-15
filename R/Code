@@ -1314,7 +1314,7 @@ cat(Masc_ellxs$ejemplo[765])
 cat(Neut_elles$ejemplo[696])
 cat(Neut_ellxs$ejemplo[52])
 
-#Ostensividad (UdeC)
+#Ostensividad
 #kwic de las palabras relacionadas a feminismo q salen en fcms
 
 Osten_elles <- kwic(toks_kwic_elles, pattern = c("feminismo", "feminist*",
