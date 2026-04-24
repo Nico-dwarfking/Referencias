@@ -190,7 +190,7 @@ Locus02 <- Locus02 %>% arrange(desc(n))
 Graph_locus <- ggplot(data = Locus02, aes(y = `place$country`,
                                           x=n, fill=Corpus)) +
   geom_col(position = "dodge") +
-  scale_fill_manual("legend", values = c("elles" = "##9C59D1",
+  scale_fill_manual("legend", values = c("elles" = "#9C59D1",
                                          "ellxs" = "gold2")) +
   theme(panel.background = element_rect(fill = "white")) +
   labs (y="Cantidad de Tweets", x="Países de procedencia") +
@@ -237,14 +237,14 @@ Graph_Fechas <-ggplot(data = Fechas, aes(x=Fecha, y=n,
                                          fill=Corpus)) +
   geom_col() +
   coord_flip() +
-  scale_fill_manual("legend", values = c("elles" = "##9C59D1",
+  scale_fill_manual("legend", values = c("elles" = "#9C59D1",
                                          "ellxs" = "gold2")) +
   scale_x_continuous(expand = c(0,0)) +
   scale_x_date(date_breaks = "6 months", date_labels = "%m-%y") +
   ggtitle ("Cantidad de tweets por fecha")
 
 
-#FCMs
+#FCMs 
 dfm_fcm_elles <- dfm_group(dfmat_all, groups = Corpus)
 dfm_fcm_ellxs <- dfm_group(dfmat_all, groups = Corpus)
 
@@ -654,12 +654,12 @@ BSRI_Neut <- c("adaptable*", "consciente*", "amigable*",
                "ineficiente*", "celos*", "secretiv*", "sincer*", "solemne*",
                "impredecible*", "servicial*", "agradable*", "confiable*")
 
-toks_kwic_elles_filtrado <- toks_kwic_elles %>%
+toks_kwic_elles_filtrado <- toks_elles %>%
   tokens_remove(pattern = c("sinceramente", "celos", "románticamente"), 
                 valuetype = "fixed", 
                 case_insensitive = TRUE)
 
-toks_kwic_ellxs_filtrado <- toks_kwic_ellxs %>%
+toks_kwic_ellxs_filtrado <- toks_ellxs %>%
   tokens_remove(pattern = c("sinceramente", "celos", "románticamente"), 
                 valuetype = "fixed", 
                 case_insensitive = TRUE)
@@ -766,14 +766,59 @@ print(GDEX_Prototipo_elles)
 elles_esp[2094,5]
 ellxs_esp[1039,5]
 
+#Colocaciones de prototipos
 
 
-IRS_Fem <- c()
+kwic_colloc_proto_elles <- kwic(toks_kwic_elles_filtrado, pattern = c(IRS_Masc,
+                                                               IRS_Fem, BSRI_Neut),
+                         window = 1)
+kwic_colloc_proto_ellxs <- kwic(toks_kwic_ellxs_filtrado, pattern = c(IRS_Fem, IRS_Masc, BSRI_Neut),
+                         window = 1)
+
+kwic_colloc_proto_elles$corpus <- case_when(TRUE ~ "elles")
+kwic_colloc_proto_ellxs$corpus <- case_when(TRUE ~ "ellxs")
+
+kwic_colloc_proto <- kwic_colloc_proto_elles %>% dplyr::bind_rows(kwic_colloc_proto_ellxs)
 
 
-Proto_Fem <- c("mujer*", "femenin*", "niña*", "")
+kwic_colloc_proto_pre <- kwic_colloc_proto %>% count(pre = tolower(pre), corpus)
+kwic_colloc_proto_post <- kwic_colloc_proto %>% count(post = tolower(post), corpus)
 
-Proto_Masc <- c("hombre*", "masculin*", "niño*")
+kwic_colloc_proto_pre$freq.mill <- kwic_colloc_proto_pre$n/17.400705
+kwic_colloc_proto_post$freq.mill <- kwic_colloc_proto_post$n/17.400705
+
+kwic_colloc_proto_pre02 <- kwic_colloc_proto_pre %>% 
+  group_by(corpus) %>% 
+  slice_max(order_by = n, n = 30) %>% 
+  ungroup()
+
+kwic_colloc_proto_post02 <- kwic_colloc_proto_post %>% 
+  group_by(corpus) %>% 
+  slice_max(order_by = n, n = 30) %>% 
+  ungroup()
+
+Graph_colloq_pre <-ggplot(data = kwic_colloc_proto_pre02,
+                              aes(x=pre, y=freq.mill, fill = corpus)) +
+  geom_col(position = "stack") +
+  scale_y_continuous(labels = comma_format(big.mark = ".",
+                                           decimal.mark = ","),
+                     expand = c(0,0)) + 
+  scale_fill_manual(values = c("elles" = "#9C59D1", "ellxs" = "gold2")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Comparación de colocaciones en pre (elles vs ellxs)")
+
+Graph_colloq_post <-ggplot(data = kwic_colloc_proto_post02,
+                              aes(x=post, y=freq.mill, fill = corpus)) +
+  geom_col(position = "stack") +
+  scale_y_continuous(labels = comma_format(big.mark = ".",
+                                           decimal.mark = ","),
+                     expand = c(0,0)) + 
+  scale_fill_manual(values = c("elles" = "#9C59D1", "ellxs" = "gold2")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Comparación de colocaciones en post (elles vs ellxs)")
+
+Table_colloq_pre <- nice_table(kwic_colloc_proto_pre02)
+Table_colloq_post <- nice_table(kwic_colloc_proto_post02)
 
 #GDEX FCMs
 
@@ -794,8 +839,6 @@ print(GDEX_fcm_elles02)
 elles_esp[47997,5]
 
 #IRS Afinn (LaSer)
-#Hacer un kwic de los pattern de afinn dentro del kwic completo de IRS
-#Tengo q subtokenizar IRS_Masc, IRS_Fem y BSRI_Neut x separado
 
 proto_masc_elles <- kwic_proto_elles [which(kwic_proto_elles$prototipo == "Masculine")]
 proto_fem_elles <- kwic_proto_elles [which(kwic_proto_elles$prototipo == "Femenine")]
@@ -1405,6 +1448,10 @@ Boxplot_proto
 Graph_hashtags
 Graph_hashtags_elles
 Graph_hashtags_ellxs
+Graph_colloq_pre
+Graph_colloq_post
+
+
 
 Tabla_Neopron
 Tabla_proto_elles
@@ -1412,3 +1459,5 @@ Tabla_proto_ellxs
 Tabla_osten_elles
 Tabla_osten_ellxs
 Tabla_locus
+Table_colloq_pre
+Table_colloq_post
