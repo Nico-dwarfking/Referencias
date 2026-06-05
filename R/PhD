@@ -27,7 +27,7 @@ library(forcats)
 
 
 #Path to data
-setwd("/Users/nicomuller/Documents/Doctorado/Tesis")
+setwd("[...]")
 
 #Importar Json
 Elles <- stream_in(file("elles.json"))
