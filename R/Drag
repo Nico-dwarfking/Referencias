@@ -28,7 +28,7 @@ library(ggnewscale)
 
 #Path to data
 setwd("[...]")
-options(max.print = 30)
+options(max.print = 900000)
 
 raw_data <- readtext("S*/*.txt", 
                      docvarsfrom = "filepath", 
@@ -67,7 +67,7 @@ Topfeat_all_plot <- ggplot(tstat_freq_all, aes(x=reorder(feature, frequency),
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   coord_flip() +
   labs (y = "Frecuencia", x=NULL) +
-  ggtitle("Palabras más frecuentes")
+  ggtitle("30 Palabras más frecuentes")
 
 
 #KWICs
@@ -79,16 +79,21 @@ kwic_royal <- kwic(toks_kwic, pattern = c("queen*", "king*", "princess*", "princ
 kwic_pronoun <- kwic(toks_kwic, pattern = c("she", "her", "he", "him"), window = 5)
 kwic_perform <- kwic(toks_kwic, pattern = c("work", "werk", "runway", "yass*",
                                             "tear the house down", "slay"), window = 5)
+kwic_person <- kwic(toks_kwic, pattern = c("girl*", "boy*", "woman", "women",
+                                           "man", "men"), window = 5)
 
 
-Fem <- c("mother*", "mom", "moms", "queen*", "princess*", "she", "her", "MILF")
-Masc <- c ("father*", "dad", "dads", "king*", "prince", "princes", "he", "him", "DILF")
+Fem <- c("mother*", "mom", "moms", "queen*", "princess*", "she", "her", "MILF",
+         "girl*", "woman", "women")
+Masc <- c ("father*", "dad", "dads", "king*", "prince", "princes", "he", "him",
+           "DILF", "boy*", "man", "men")
 
 
 kwic_list <- list(pronouns = kwic_pronoun,
                   Eltern = kwic_eltern,
                   royal = kwic_royal,
-                  performance = kwic_perform)
+                  performance = kwic_perform,
+                  person = kwic_person)
 
 kwics_counts <- lapply(kwic_list, function(cw){
   cw %>% 
@@ -98,7 +103,8 @@ kwics_counts <- lapply(kwic_list, function(cw){
       pattern %in% Masc ~ "Masculine",
       TRUE ~ "Otro"
     )) %>% 
-    count(keyword = tolower(keyword), gender)
+    count(keyword = tolower(keyword), gender) %>% 
+    arrange(desc(n))
 })
 
 
@@ -168,6 +174,7 @@ Topfeat_dfmat <- lapply(dfmat_relativa, function(top) {
 
 Topfeat_dfmat02 <- bind_rows(Topfeat_dfmat, .id = "season")
 
+
 Heatmap_season <- ggplot(Topfeat_dfmat02, aes(x=season, y=feature,
                                                     fill = frequency)) +
   geom_tile() +
@@ -176,6 +183,8 @@ Heatmap_season <- ggplot(Topfeat_dfmat02, aes(x=season, y=feature,
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Mapa de calor: Frecuencia de palabras por temporada",
        x = "Temporada", y="Topfeatures")
+
+Topfeat_season_table <- nice_table(Topfeat_dfmat02)
 
 #KWICS x temporada
 season_kwic <- split(toks_kwic, f=docvars(toks_kwic, "season"))
@@ -207,18 +216,29 @@ kwic_performance_season <- lapply(names(season_kwic), function(s) {
   return(res)
 })
 
+kwic_person_season <- lapply(names(season_kwic), function(s) {
+  res <- kwic(season_kwic [[s]], pattern = c("girl*", "boy*", "woman", "women",
+                                             "man", "men"), window = 5)
+  res$Season <- s
+  return(res)
+})
+
+
 names(kwic_eltern_season) <- names(season_kwic)
 names(kwic_royal_season) <- names(season_kwic)
 names(kwic_pronoun_season) <- names(season_kwic)
 names(kwic_performance_season) <- names(season_kwic)
+names(kwic_person_season) <- names(season_kwic)
 
 kwic_eltern_season02 <- do.call(rbind, kwic_eltern_season)
 kwic_royal_season02 <- do.call(rbind, kwic_royal_season)
 kwic_pronoun_season02 <- do.call(rbind, kwic_pronoun_season)
 kwic_performance_season02 <- do.call(rbind, kwic_performance_season)
+kwic_person_season02 <-  do.call(rbind, kwic_person_season)
 
 Kwics_season <- rbind(kwic_eltern_season02, kwic_royal_season02,
-                      kwic_pronoun_season02, kwic_performance_season02)
+                      kwic_pronoun_season02, kwic_performance_season02,
+                      kwic_person_season02)
 
 Kwics_season$gender <- case_when(
   Kwics_season$pattern %in% Fem ~ "Femenine",
@@ -231,6 +251,7 @@ kwics_season_count$freq.mill <- kwics_season_count$n/2.347130
 
 Kwics_season_F <- subset(kwics_season_count, gender == "Femenine")
 Kwics_season_M <- subset(kwics_season_count, gender == "Masculine")
+Kwics_otre <- subset(kwics_season_count, gender == "Otre")
 
 Heatmap_kwic <- ggplot () +
   geom_tile(data = Kwics_season_F, aes(x=Season, y=keyword, fill=freq.mill)) +
@@ -242,6 +263,15 @@ Heatmap_kwic <- ggplot () +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Mapa de calor: Frecuencia de palabras clave por temporada")
 
+Heatmap_otre <- ggplot(Kwics_otre, aes(x=Season, y=keyword, fill=freq.mill)) +
+  geom_tile() +
+  scale_fill_gradient("Frecuencia Relativa", low="gold2", high = "#9C59D1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Mapa de calor: Frecuencia de palabras clave por temporada",
+       x = "Season", y="Keyword")
+
+Topfeat_season_table <- nice_table(Topfeat_dfmat02)
 
 #colocaciones de kwics
 
@@ -255,6 +285,8 @@ runway <- "runway"
 yass <- "yass"
 slay <- "slay"
 work <- c("work", "werk")
+gf <- "girlfriend"
+bf <- "boyfriend"
 
 
 kwic_mom <- kwic(toks_clean, pattern = c("mother", "mothers", "mom", "moms"),
@@ -269,6 +301,8 @@ kwic_runway <- kwic(toks_clean, pattern = "runway", window = 1)
 kwic_yass <- kwic(toks_clean, pattern = "yass", window = 1)
 kwic_slay <- kwic(toks_clean, pattern = "slay", window = 1)
 kwic_work <- kwic(toks_clean, pattern = c("work", "werk"), window = 1)
+kwic_gf <- kwic(toks_clean, pattern = "girlfriend", window = 1)
+kwic_bf <- kwic(toks_clean, pattern = "boyfriend", window = 1)
 
 colloqs <-  list(mom = kwic_mom,
                  dad = kwic_dad,
@@ -279,7 +313,9 @@ colloqs <-  list(mom = kwic_mom,
                  runway = kwic_runway,
                  yass = kwic_yass,
                  slay = kwic_slay,
-                 work = kwic_work)
+                 work = kwic_work,
+                 gf = kwic_gf,
+                 bf = kwic_bf)
 
 
 colloqs_pre <- lapply(colloqs, function(f){
@@ -295,7 +331,9 @@ colloqs_pre <- lapply(colloqs, function(f){
       pattern %in% runway ~ "Runway",
       pattern %in% yass ~ "Yass",
       pattern %in% slay ~ "Slay",
-      pattern %in% work ~ "Werk"
+      pattern %in% work ~ "Werk",
+      pattern %in% gf ~ "Girlfriend",
+      pattern %in% bf ~ "Boyfriend"
     )) %>% 
     count(pre = tolower(pre), Key) %>% 
     arrange(desc(n)) %>% 
@@ -315,9 +353,11 @@ colloqs_post <- lapply(colloqs, function(f){
       pattern %in% runway ~ "Runway",
       pattern %in% yass ~ "Yass",
       pattern %in% slay ~ "Slay",
-      pattern %in% work ~ "Werk"
+      pattern %in% work ~ "Werk",
+      pattern %in% gf ~ "Girlfriend",
+      pattern %in% bf ~ "Boyfriend"
     )) %>% 
-    count(pre = tolower(post), Key) %>% 
+    count(post = tolower(post), Key) %>% 
     arrange(desc(n)) %>% 
     slice(1:5)
 })
@@ -328,7 +368,8 @@ colloqs_pre02 <- do.call(rbind, colloqs_pre)
 colloqs_post02 <- do.call(rbind, colloqs_post)
 
 
-Graphs_colloq_pre <- ggplot(colloqs_pre02, aes(x = pre, y = n, fill = Key)) +
+Graphs_colloq_pre <- ggplot(colloqs_pre02, aes(x = interaction (pre, Key), y = n,
+                                               fill = Key)) +
   geom_col(position = "dodge") +
   coord_flip() +
   scale_fill_manual("Leyenda", values = c("Mother"   = "#FF6B6B",
@@ -340,13 +381,16 @@ Graphs_colloq_pre <- ggplot(colloqs_pre02, aes(x = pre, y = n, fill = Key)) +
                                           "Runway"   = "#00F5D4",
                                           "Yass"     = "#7209B7",
                                           "Slay"     = "#3A0CA3",
-                                          "Werk"     = "#4361EE")) +
+                                          "Werk"     = "#4361EE",
+                                          "Girlfriend" = "#F5A9B8",
+                                          "Boyfriend" = "#5BCEFA")) +
   scale_y_log10(expand = c(0,0)) +
   labs(x = "Colocación", y = "n, escala logarítmica") +
   ggtitle ("Colocaciones más frecuentes pre")
 
 
-Graphs_colloq_post <- ggplot(colloqs_post02, aes(x = pre, y = n, fill = Key)) +
+Graphs_colloq_post <- ggplot(colloqs_post02, aes(x = interaction(post, Key),
+                                                 y = n, fill = Key)) +
   geom_col(position = "dodge") +
   coord_flip() +
   scale_fill_manual("Leyenda", values = c("Mother"   = "#FF6B6B",
@@ -358,11 +402,16 @@ Graphs_colloq_post <- ggplot(colloqs_post02, aes(x = pre, y = n, fill = Key)) +
                                           "Runway"   = "#00F5D4",
                                           "Yass"     = "#7209B7",
                                           "Slay"     = "#3A0CA3",
-                                          "Werk"     = "#4361EE")) +
-  scale_y_log10(expand = c(0,0)) +
-  labs(x = "Colocación", y = "n, escala logarítmica") +
+                                          "Werk"     = "#4361EE",
+                                          "Girlfriend" = "#F5A9B8",
+                                          "Boyfriend" = "#5BCEFA")) +
+  scale_y_continuous(expand = c(0,0),
+                     breaks = scales::pretty_breaks(n = 10)) +
+  labs(x = "Colocación", y = "n") +
   ggtitle ("Colocaciones más frecuentes post")
 
+Tabla_pre <- nice_table(colloqs_pre02)
+Tabla_post <- nice_table(colloqs_post02)
 
 ##Plots
 Topfeat_all_plot
@@ -372,6 +421,7 @@ lapply(Graphs_kwic, function(v) {
 Graphs_kwic_pronouns
 Heatmap_season
 Heatmap_kwic
+Heatmap_otre
 Graphs_colloq_pre
 Graphs_colloq_post
 
@@ -379,5 +429,5 @@ Graphs_colloq_post
 lapply(Tablas_kwic, function(v) {
   v
 })
-Tabla_pre <- nice_table(colloqs_pre02) 
-Tabla_post <- nice_table(colloqs_post02)
+Tabla_pre
+Tabla_post
