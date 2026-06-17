@@ -27,7 +27,7 @@ library(forcats)
 library(ggnewscale)
 
 #Path to data
-setwd("[...]")
+setwd("/Users/nicomuller/Documents/Drag/Subs/Formatted_Subtitles")
 options(max.print = 900000)
 
 raw_data <- readtext("S*/*.txt", 
@@ -101,7 +101,7 @@ kwics_counts <- lapply(kwic_list, function(cw){
     mutate(gender = case_when(
       pattern %in% Fem ~ "Femenine",
       pattern %in% Masc ~ "Masculine",
-      TRUE ~ "Otro"
+      TRUE ~ "Otre"
     )) %>% 
     count(keyword = tolower(keyword), gender) %>% 
     arrange(desc(n))
@@ -115,7 +115,7 @@ Graphs_kwic <- lapply(kwics_counts, function(gr) {
     scale_y_log10() +
     scale_fill_manual("Género", values = c("Femenine" = "#D60270",
                                            "Masculine" = "#0038A8",
-                                           "Otro" = "#9B4F96")) +
+                                           "Otre" = "#9B4F96")) +
     theme(panel.background = element_rect(fill = "white")) +
     coord_flip() +
     labs (x="Keywords", y = "Frecuencia: Escala Logarítmica")
@@ -127,7 +127,7 @@ Graphs_kwic_pronouns <- ggplot(kwics_counts$pronouns,
   geom_col() +
   scale_fill_manual("Género", values = c("Femenine" = "#D60270",
                                          "Masculine" = "#0038A8",
-                                         "Otro" = "#9B4F96")) +
+                                         "Otre" = "#9B4F96")) +
   theme(panel.background = element_rect(fill = "white")) +
   coord_flip() +
   labs (x="Keywords", y = "Frecuencia")
@@ -143,16 +143,6 @@ Tablas_kwic <- lapply(kwics_counts, function (tb) {
   tb %>% 
     nice_table(title = "Frecuencia de palabras clave")
 })
-
-#KWICS
-for (nombre in names(kwic_list)) {
-  View(kwic_list[[nombre]], title = nombre)
-}
-
-#Counts
-for (nombre in names(kwics_counts)) {
-  View(kwics_counts[[nombre]], title = nombre)
-}
 
 
 #Topfeat x temporada
@@ -431,3 +421,13 @@ lapply(Tablas_kwic, function(v) {
 })
 Tabla_pre
 Tabla_post
+
+#KWICS
+for (nombre in names(kwic_list)) {
+  View(kwic_list[[nombre]], title = nombre)
+}
+
+#Counts
+for (nombre in names(kwics_counts)) {
+  View(kwics_counts[[nombre]], title = nombre)
+}
