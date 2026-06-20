@@ -400,8 +400,10 @@ Graphs_colloq_post <- ggplot(colloqs_post02, aes(x = interaction(post, Key),
   labs(x = "Colocación", y = "n") +
   ggtitle ("Colocaciones más frecuentes post")
 
-Tabla_pre <- nice_table(colloqs_pre02)
-Tabla_post <- nice_table(colloqs_post02)
+Tabla_pre <- nice_table(colloqs_pre02,
+                        title = "Colocaciones anteriores")
+Tabla_post <- nice_table(colloqs_post02,
+                         title = "Colocaciones posteriores")
 
 ##Plots
 Topfeat_all_plot
