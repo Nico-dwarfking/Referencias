@@ -25,9 +25,36 @@ library(ggwordcloud)
 library(ggpattern)
 library(forcats)
 library(ggnewscale)
+library(purrr)
+library(tidyr)
+
+
+#GDEX
+setwd("...")
+freq_list_ESP <- read.csv("SUBTLEX-ESP.csv", header = T, row.names = NULL, sep = ";", 
+                          encoding = "UTF-8") %>% 
+  select(Word, Freq..per.million) %>% 
+  mutate(Word = str_to_lower(Word))
+
+freq_lookup <- setNames(freq_list_ESP$Freq..per.million, freq_list_ESP$Word)
+
+score_example <- function(sentence) {
+  tokens <- str_split(str_to_lower(sentence), "\\s+")[[1]]
+  tokens <- str_replace_all(tokens, "[[:punct:]]", "")
+  tokens <- tokens[tokens != ""]
+  len <- length(tokens)
+  length_score <- ifelse(len >= 8 & len <= 20, 1, 0)
+  freq_vals <- freq_lookup[tokens]
+  freq_vals_num <- suppressWarnings(as.numeric(freq_vals))
+  freq_vals_num[is.na(freq_vals_num)] <- 0.01
+  freq_score <- mean(log10(freq_vals_num + 1))
+  symbol_penalty <- ifelse(str_detect(sentence, "[^\\wáéíóúüñÁÉÍÓÚÜÑ\\s.,]"), -0.5, 0)
+  total <- length_score + freq_score + symbol_penalty
+  return(total)
+}
 
 #Path to data
-setwd("/Users/nicomuller/Documents/Drag/Subs/Formatted_Subtitles")
+setwd("...")
 options(max.print = 900000)
 
 raw_data <- readtext("S*/*.txt", 
@@ -48,7 +75,9 @@ toks_clean <- tokens(Corpus, remove_punct = T, remove_symbols = F,
   tokens_remove (pattern = "\\[.*?\\]", valuetype = "regex") %>% 
   tokens_keep(pattern = "^[\\p{script=Latn}]+$", valuetype = "regex")
 
-toks_kwic <- tokens(Corpus)
+Corpus_kwic <- corpus_reshape(Corpus, to = "sentences")
+
+toks_kwic <- tokens(Corpus_kwic, remove_punct = FALSE)
 
 dfmat_kwic <- dfm(toks_kwic)
 dfmat_clean <- dfm(toks_clean)
@@ -278,34 +307,23 @@ work <- c("work", "werk")
 gf <- "girlfriend"
 bf <- "boyfriend"
 
+colloq_tag <- list(mom = mom,
+                   dad = dad,
+                   king = king,
+                   queen = queen,
+                   queendom = queendom,
+                   kingdom = kingdom,
+                   runway = runway,
+                   yass = yass,
+                   slay = slay,
+                   work = work,
+                   gf = gf,
+                   bf = bf)
 
-kwic_mom <- kwic(toks_clean, pattern = c("mother", "mothers", "mom", "moms"),
-                  window = 1)
-kwic_dad <- kwic(toks_clean, pattern = c("dad", "dads", "father", "fathers"),
-                 window = 1)
-kwic_king <- kwic(toks_clean, pattern = c("king", "kings"), window = 1)
-kwic_queen <- kwic(toks_clean, pattern = c("queen", "queens"), window = 1)
-kwic_queendom <- kwic(toks_clean, pattern = "queendom", window = 1)
-kwic_kingdom <- kwic(toks_clean, pattern = "kingdom", window = 1)
-kwic_runway <- kwic(toks_clean, pattern = "runway", window = 1)
-kwic_yass <- kwic(toks_clean, pattern = "yass", window = 1)
-kwic_slay <- kwic(toks_clean, pattern = "slay", window = 1)
-kwic_work <- kwic(toks_clean, pattern = c("work", "werk"), window = 1)
-kwic_gf <- kwic(toks_clean, pattern = "girlfriend", window = 1)
-kwic_bf <- kwic(toks_clean, pattern = "boyfriend", window = 1)
-
-colloqs <-  list(mom = kwic_mom,
-                 dad = kwic_dad,
-                 king = kwic_king,
-                 queen = kwic_queen,
-                 queendom = kwic_queendom,
-                 kingdom = kwic_kingdom,
-                 runway = kwic_runway,
-                 yass = kwic_yass,
-                 slay = kwic_slay,
-                 work = kwic_work,
-                 gf = kwic_gf,
-                 bf = kwic_bf)
+colloqs <- Map(function(asdf){
+  kwic(toks_clean, pattern = asdf, window =1)
+},
+asdf = colloq_tag)
 
 
 colloqs_pre <- lapply(colloqs, function(f){
@@ -351,7 +369,6 @@ colloqs_post <- lapply(colloqs, function(f){
     arrange(desc(n)) %>% 
     slice(1:5)
 })
-
 
 
 colloqs_pre02 <- do.call(rbind, colloqs_pre)
@@ -404,6 +421,124 @@ Tabla_pre <- nice_table(colloqs_pre02,
                         title = "Colocaciones anteriores")
 Tabla_post <- nice_table(colloqs_post02,
                          title = "Colocaciones posteriores")
+
+
+#GDEXs
+mf <- "motherfucker"
+drag <- "drag"
+girl <- "girl"
+
+kwic_tag <- list(mom = mom,
+                 dad = dad,
+                 king = king,
+                 queen = queen,
+                 queendom = queendom,
+                 kingdom = kingdom,
+                 runway = runway,
+                 yass = yass,
+                 slay = slay,
+                 work = work,
+                 gf = gf,
+                 bf = bf,
+                 mf = mf,
+                 drag = drag,
+                 girl = girl)
+
+kwic_gdex <- Map(function(asdf){
+  kwic(toks_kwic, pattern = c(asdf), window = 999)
+},
+asdf = kwic_tag)
+
+episodes <- tibble(
+  docname = docnames(toks_kwic),
+  season = docvars(toks_kwic, "season"),
+  episode = docvars(toks_kwic, "episode")
+)
+
+
+
+
+GDEX_list <- lapply(kwic_gdex, function(f){
+  if (is.null(f) || nrow(f) == 0) return(tibble())
+  matched_rows <- match(f$doc, docnames(toks_kwic))
+  as_tibble(f) %>%
+    left_join(episodes, by = "docname") %>%
+    mutate(
+      ejemplo = paste(pre, keyword, post),
+      score = map_dbl(ejemplo, score_example)
+    ) %>%
+    select(
+      ejemplo,
+      season,
+      episode,
+      docname,
+      start_pos = from,
+      score
+    ) %>%
+    arrange(desc(score))
+})
+
+
+
+View(GDEX_list$mom)
+View(GDEX_list$dad)
+View(GDEX_list$king)
+View(GDEX_list$queen)
+View(GDEX_list$queendom)
+View(GDEX_list$kingdom)
+View(GDEX_list$runway)
+View(GDEX_list$yass)
+View(GDEX_list$slay)
+View(GDEX_list$work)
+View(GDEX_list$gf)
+View(GDEX_list$bf)
+View(GDEX_list$mf)
+View(GDEX_list$drag)
+View(GDEX_list$girl)
+
+#mom
+Corpus_kwic[["text17.392"]]
+Corpus_kwic[["text37.227"]]
+#dad
+Corpus_kwic[["text7.16"]]
+Corpus_kwic[["text110.142"]]
+#king
+Corpus_kwic[["text145.568"]]
+Corpus_kwic[["text172.412"]]
+#queen
+Corpus_kwic[["text3.37"]]
+Corpus_kwic[["text5.57"]]
+#queendom
+Corpus_kwic[["text93.21"]]
+#kingdom
+Corpus_kwic[["text146.22"]]
+Corpus_kwic[["text56.43"]]
+#runway
+Corpus_kwic[["text5.222"]]
+Corpus_kwic[["text8.629"]]
+Corpus_kwic[["text85.489"]]
+#slay
+Corpus_kwic[["text115.179"]]
+Corpus_kwic[["text131.142"]]
+#work
+Corpus_kwic[["text146.46"]]
+#gf
+Corpus_kwic[["text90.104"]]
+Corpus_kwic[["text127.194"]]
+Corpus_kwic[["text3.341"]]
+Corpus_kwic[["text92.674"]]
+#bf
+Corpus_kwic[["text14.333"]]
+Corpus_kwic[["text155.557"]]
+#mf
+Corpus_kwic[["text85.97"]]
+Corpus_kwic[["text39.168"]]
+#girl
+Corpus_kwic[["text6.318"]]
+Corpus_kwic[["text23.393"]]
+Corpus_kwic[["text19.564"]]
+#SX-EX
+docvars(Corpus_kwic["text92.674"])
 
 ##Plots
 Topfeat_all_plot
