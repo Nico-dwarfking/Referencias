@@ -268,18 +268,23 @@ Graph_locus <- ggplot(data = Locus02, aes(y = country, x=n, fill=marca)) +
 Tabla_locus <- nice_table(Locus02, title = "Tabla de países de proveniencia de tweets")
 
 #Fechas
-Fechas <- corp_total %>% count(Fecha, marca)
-Fechas <- Fechas |> mutate(n = if_else(marca == "Ellxs", 
-                                       n, -n))
+Fechas <- lapply(List_corpus[1:2], function(f){
+  f %>% 
+    count(Fecha, marca) %>% 
+    mutate(n = if_else(marca == "Ellxs", 
+                       n, -n))
+})
 
-Graph_Fechas <-ggplot(data = Fechas, aes(x=Fecha, y=n,
-                                         fill=marca)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual("legend", values = colours) +
-  scale_x_continuous(expand = c(0,0)) +
-  scale_x_date(date_breaks = "6 months", date_labels = "%m-%y") +
-  ggtitle ("Cantidad de tweets por fecha")
+Graph_Fechas <- Map(f = function(data, titulo){
+  ggplot(data, mapping = aes(x=Fecha, y=n, fill=marca)) +
+    geom_col() +
+    coord_flip() +
+    scale_fill_manual("legend", values = colours) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_x_date(date_breaks = "6 months", date_labels = "%m-%y") +
+    ggtitle (titulo)},
+  data = Fechas,
+  titulo = c("Fechas Twitter", "Fechas Bluesky"))
 
 #FCMs
 dfm_fcm_marca <- dfm_group(dfmats$Corpus_Total, groups = marca)
@@ -834,7 +839,7 @@ Boxplot_proto_afinn <- ggplot(afinn_proto_total, aes(x=interaction(Subcorpus, pr
 
 Boxplot_proto_afinn
 
-proto_afinn_GDEX <- lapply(kwic_proto_afinn02, function(f){
+proto_afinn_GDEX <- lapply(kwic_proto_afinn02[1:6], function(f){
   tibble(
     ejemplo = paste(f$pre, f$keyword, f$post),
     docname = f$docname,
@@ -893,3 +898,24 @@ osten_gdex <- lapply(osten_kwic, function(f){
 
 print(Osten_elles_gdex02)
 print(Osten_ellxs_gdex02)
+
+
+#Visualizaciones
+lapply(Topfeatures, function(f){f})
+Graph_locus
+lapply(Graph_Fechas, function(f){f})
+lapply(fcm_plot, function(f){f})
+lapply(Plot_hashtags, function(f){f})
+lapply(Plot_afinn, function(f){f})
+Boxplot_afinn
+lapply(Plot_prototype_keyword, function(f){f})
+lapply(Plot_prototype_stats, function(f){f})
+lapply(Plot_colloqs, function(f){f})
+lapply(Plot_afinn_proto, function(f){f})
+Boxplot_proto_afinn
+lapply(plot_osten, function(f){f})
+
+Tabla_Neopron
+lapply(Tabla_prototype, function(f){f})
+Tabla_locus
+lapply(Table_colloqs, function(f){f})
