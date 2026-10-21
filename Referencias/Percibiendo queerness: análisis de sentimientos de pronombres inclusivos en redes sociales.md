@@ -1,5 +1,7 @@
 Austin, J. L. 1962. How to Do Things with Words : The William James Lectures Delivered at Harvard University in 1955. William James Lectures. Oxford University Press. WorldCat.
 
+Barra, E. (2005). Inventario de Rol Sexual. En P. Vera y L. Oblitas (Eds.) Manual de Escalas y Cuestionarios Iberoamericanos en Psicología Clínica y de la Salud, Bogotá: Psicom Editores
+
 Bem, Sandra L. 1974. “The measurement of psychological androgyny.” Journal of Consulting and Clinical Psychology (US) 42 (2): 155–62. https://doi.org/10.1037/h0036215.
 
 Butler, Judith. 1988. “Performative Acts and Gender Constitution: An Essay in Phenomenology and Feminist Theory”. Theatre Journal 40 (4): 519–31. JSTOR. https://doi.org/10.2307/3207893.
